@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PALABRAS A CONTRARRELOJ</title>
+<style>
+  body {
+    margin: 0; background: #121212; color: #eee; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; user-select: none;
+    padding: 10px;
+  }
+  h1 {
+    margin: 10px 0 30px 0;
+    font-family: Impact, "Arial Black", system-ui, sans-serif; 
+    font-size: 2.35rem;
+    color: #ffdd00;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px #ffec6a;
+    text-align: center;
+  }
+  .screen { display: none; width: 100%; max-width: 500px; flex-direction: column; align-items: center; }
+  #home { display: flex; justify-content: center; flex-direction: column; align-items: center; }
+  button {
+    background: #ffd700; border: none; padding: 10px 20px; margin: 10px; font-weight: 700; border-radius: 6px;
+    cursor: pointer; color: #121212; font-size: 1.2rem; user-select: none; box-shadow: 0 0 5px #ffd700;
+    transition: all 0.3s ease;
+  }
+  button:hover:not(:disabled) { background: #ffec6a; transform: scale(1.05); }
+  button:disabled { background: #999; cursor: default; }
+  .grayBtn { background: #888; color: #eee; }
+  #letters {
+    display: grid;
+    grid-template-columns: repeat(8, 40px);
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  .letter {
+    width: 40px; height: 40px; background: #eee; color: #121212; font-weight: 800; font-size: 1.5rem;
+    display: flex; justify-content: center; align-items: center; border-radius: 10px; cursor: pointer;
+    user-select: none; box-shadow: 0 0 10px #ffd700; transition: all 0.2s ease;
+  }
+  .letter.used { background: #444; color: #888; cursor: default; box-shadow: none; transform: scale(0.95); }
+  .letter.active { transform: scale(1.3); background: #ffec6a; }
+  #currentWord { 
+    font-size: 1.8rem; min-height: 2.5rem; letter-spacing: 3px; margin-bottom: 10px; 
+    user-select: text; text-align: center; padding: 5px 10px; border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1); 
+  }
+  #buttons { margin-bottom: 10px; display: flex; gap: 10px; }
+  #timer { 
+    font-size: 1.8rem; margin-bottom: 10px; color: #00ffff; font-weight: 700; 
+    text-shadow: 0 0 5px #00ffff; 
+  }
+  #scoreboard { 
+    font-size: 1.2rem; margin-bottom: 10px; letter-spacing: 1px; 
+    padding: 8px 12px; border-radius: 6px; background: rgba(0, 0, 0, 0.3);
+  }
+  #message {
+    height: 2em; margin-bottom: 15px; color: #ffd700; font-size: 1.3rem; font-weight: 700;
+    text-align: center; transition: all 0.25s ease; min-width: 100%;
+  }
+  
+  /* Animaciones */
+  @keyframes pointsFlash {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+  }
+  .points-flash {
+    position: absolute;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #4CAF50;
+    text-shadow: 0 0 5px #000;
+    animation: pointsFlash 1s forwards;
+    pointer-events: none;
+    z-index: 100;
+  }
+  
+  @keyframes levelUp {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+  }
+  .level-up {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    font-weight: bold;
+    color: gold;
+    text-shadow: 0 0 15px #000;
+    animation: levelUp 1.5s forwards;
+    z-index: 1000;
+  }
+  
+  /* Estilos para clasificaciones */
+  #scoreList {
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+  }
+  .score-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    margin: 5px 0;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 5px;
+    border-left: 3px solid #ffd700;
+  }
+  .score-position {
+    font-weight: bold;
+    color: #ffd700;
+  }
+  .score-value {
+    font-weight: bold;
+  }
+  .score-date {
+    font-size: 0.9rem;
+    color: #aaa;
+  }
+  
+  /* Tabs simplificados */
+  .score-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .score-tab {
+    padding: 6px 12px;
+    background: #333;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+  .score-tab.active {
+    background: #ffd700;
+    color: #121212;
+    font-weight: bold;
+  }
+  
+  /* Mejoras para la pantalla CÓMO JUGAR */
+  .instruction-list {
+    width: 100%;
+    padding: 0 20px;
+    list-style-type: none;
+  }
+  .instruction-item {
+    margin-bottom: 15px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #ffd700;
+    display: flex;
+    align-items: center;
+  }
+  .instruction-icon {
+    margin-right: 12px;
+    font-size: 1.5rem;
+    min-width: 30px;
+    text-align: center;
+  }
+  .instruction-text {
+    flex: 1;
+  }
+  .important-note {
+    background: rgba(255, 100, 100, 0.1);
+    border-left: 4px solid #ff4444;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  /* Nuevos estilos para mejoras visuales */
+  .score-filter {
+    margin: 10px 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .score-filter button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  .no-scores {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<h1>PALABRAS A CONTRARRELOJ</h1>
+
+<!-- PANTALLA INICIAL -->
+<div id="home" class="screen">
+  <button id="playBtn">JUGAR</button>
+  <button id="scoresBtn" class="grayBtn">CLASIFICACIONES</button>
+  <button id="howToBtn" class="grayBtn">CÓMO JUGAR</button>
+</div>
+
+<!-- PANTALLA DE JUEGO -->
+<div id="game" class="screen">
+  <div id="letters"></div>
+  <div id="currentWord"></div>
+  <div id="buttons">
+    <button id="validateBtn" disabled>Validar</button>
+    <button id="clearBtn" disabled>Borrar</button>
+  </div>
+  <div id="timer">60</div>
+  <div id="scoreboard">Nivel: 1 | Puntos: 0 | Meta: 30</div>
+  <div id="message">Cargando diccionario...</div>
+  <button id="backFromGameBtn" class="grayBtn">SALIR</button>
+</div>
+
+<!-- PANTALLA DE CLASIFICACIONES MEJORADA -->
+<div id="scores" class="screen">
+  <h2 style="color: #ffd700; margin-bottom: 20px;">CLASIFICACIONES</h2>
+  
+  <div class="score-tabs">
+    <div class="score-tab active" data-range="daily">Diario</div>
+    <div class="score-tab" data-range="weekly">Semanal</div>
+    <div class="score-tab" data-range="monthly">Mensual</div>
+    <div class="score-tab" data-range="yearly">Anual</div>
+    <div class="score-tab" data-range="allTime">Histórico</div>
+  </div>
+  
+  <div class="score-filter">
+    <button id="showAllScores" class="grayBtn">Todos</button>
+    <button id="showMyScores" class="grayBtn">Mis Puntuaciones</button>
+  </div>
+  
+  <div id="scoreList"></div>
+  
+  <button id="backBtn" class="grayBtn" style="margin-top: 20px;">VOLVER</button>
+</div>
+
+<!-- PANTALLA CÓMO JUGAR - MEJORADA -->
+<div id="howTo" class="screen">
+  <h2 style="color: #ffd700; margin-bottom: 20px;">CÓMO JUGAR</h2>
+  
+  <ul class="instruction-list">
+    <li class="instruction-item">
+      <div class="instruction-icon">🔤</div>
+      <div class="instruction-text">Forma palabras de 3 letras o más con las letras disponibles.</div>
+    </li>
+    <li class="instruction-item">
+      <div class="instruction-icon">✅</div>
+      <div class="instruction-text">Valida tus palabras para sumar puntos.</div>
+    </li>
+    <li class="instruction-item">
+      <div class="instruction-icon">📊</div>
+      <div class="instruction-text">Palabras más largas generan más puntos.</div>
+    </li>
+    <li class="instruction-item">
+      <div class="instruction-icon">🔥</div>
+      <div class="instruction-text">Puntos extra por cada 5 y 10 palabras correctas consecutivas.</div>
+    </li>
+    <li class="instruction-item">
+      <div class="instruction-icon">⏱️</div>
+      <div class="instruction-text">Tienes 60 segundos para alcanzar la meta de cada nivel.</div>
+    </li>
+  </ul>
+  
+  <div class="important-note">
+    <strong>⚠️ IMPORTANTE:</strong> No serán válidas conjugaciones verbales ni plurales (solo palabras en singular).
+  </div>
+  
+  <button id="backFromHowToBtn" class="grayBtn">VOLVER</button>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Navegación simplificada
+  const homeDiv = document.getElementById('home');
+  const gameDiv = document.getElementById('game');
+  const scoresDiv = document.getElementById('scores');
+  const howToDiv = document.getElementById('howTo');
+  
+  function showScreen(screen) {
+    homeDiv.style.display = 'none';
+    gameDiv.style.display = 'none';
+    scoresDiv.style.display = 'none';
+    howToDiv.style.display = 'none';
+    screen.style.display = 'flex';
+  }
+
+  // Event listeners
+  document.getElementById('playBtn').addEventListener('click', function() {
+    resetGame();
+    showScreen(gameDiv);
+  });
+  
+  document.getElementById('scoresBtn').addEventListener('click', function() {
+    showScores();
+    showScreen(scoresDiv);
+  });
+  
+  document.getElementById('howToBtn').addEventListener('click', function() {
+    showScreen(howToDiv);
+  });
+  
+  document.getElementById('backBtn').addEventListener('click', function() {
+    showScreen(homeDiv);
+  });
+  
+  document.getElementById('backFromGameBtn').addEventListener('click', function() {
+    clearInterval(timerInterval);
+    showScreen(homeDiv);
+  });
+  
+  document.getElementById('backFromHowToBtn').addEventListener('click', function() {
+    showScreen(homeDiv);
+  });
+  
+  // Mostrar pantalla inicial
+  showScreen(homeDiv);
+
+  // Elementos de juego
+  const lettersDiv = document.getElementById('letters');
+  const currentWordDiv = document.getElementById('currentWord');
+  const validateBtn = document.getElementById('validateBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const timerDiv = document.getElementById('timer');
+  const scoreboardDiv = document.getElementById('scoreboard');
+  const messageDiv = document.getElementById('message');
+  const scoreListDiv = document.getElementById('scoreList');
+  const showAllScoresBtn = document.getElementById('showAllScores');
+  const showMyScoresBtn = document.getElementById('showMyScores');
+
+  // Sonidos
+  const soundCorrect = new Audio("https://github.com/MVRRVT7/diccionario-palabras/raw/refs/heads/main/sonidos/Correct.mp3");
+  const soundWrong = new Audio("https://github.com/MVRRVT7/diccionario-palabras/raw/refs/heads/main/sonidos/wrong.mp3");
+  const soundBonus = new Audio("https://github.com/MVRRVT7/diccionario-palabras/raw/refs/heads/main/sonidos/bonus.wav");
+  const soundLevelUp = new Audio("https://github.com/MVRRVT7/diccionario-palabras/raw/refs/heads/main/sonidos/LevelUp.wav");
+  const soundGameOver = new Audio("https://github.com/MVRRVT7/diccionario-palabras/raw/refs/heads/main/sonidos/final.wav");
+  const soundCountDown = new Audio("https://github.com/MVRRVT7/diccionario-palabras/raw/refs/heads/main/sonidos/CountDown.wav");
+
+  // Constantes del juego
+  const vowels = ['A','E','I','O','U'];
+  const alphabetWeighted = [
+    'A','A','A','A','A','E','E','E','E','E','E','I','I','I','I','O','O','O','O','U','U','N','N','N','S','S','S',
+    'R','R','R','L','L','L','D','D','T','T','C','C','M','M','P','P','B','B','V','G','Y','F','Q','H','J','Z','X','K','W'
+  ];
+  
+  // TU DICCIONARIO DE GITHUB
+  const diccionarioURL = 'https://mvrrvt7.github.io/diccionario-palabras/palabras.txt';
+
+  // Variables del juego
+  let letters = [], usedIndices = [], currentWord = "", score = 0, level = 1, goal = 30, timeLeft = 60, timerInterval = null;
+  const palabrasFormadas = new Set();
+  let consecutive5 = 0, consecutive10 = 0;
+  let diccionario = new Set();
+  let countdownPlayed = false;
+  let currentScoreFilter = 'all';
+  
+  // ID único para el jugador
+  const playerId = localStorage.getItem('playerId') || `player_${Date.now()}`;
+  localStorage.setItem('playerId', playerId);
+
+  // Sistema de clasificaciones simplificado pero funcional
+  function saveScore() {
+    if (score <= 0) return;
+    
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const weekId = getWeekId(now);
+    const monthId = getMonthId(now);
+    const yearId = getYearId(now);
+    
+    // Obtener mejores puntuaciones actuales
+    const bestScores = JSON.parse(localStorage.getItem('wordGameBestScores') || '{}');
+    
+    // Inicializar estructura si no existe
+    if (!bestScores[playerId]) {
+      bestScores[playerId] = {
+        name: "Tú",
+        daily: { score: 0, date: today },
+        weekly: { score: 0, date: weekId },
+        monthly: { score: 0, date: monthId },
+        yearly: { score: 0, date: yearId },
+        allTime: { score: 0 }
+      };
+    }
+    
+    const playerScores = bestScores[playerId];
+    
+    // Actualizar si es mejor puntuación o es un nuevo período
+    if (score > playerScores.daily.score || playerScores.daily.date !== today) {
+      playerScores.daily = { score: score, date: today };
+    }
+    
+    if (score > playerScores.weekly.score || playerScores.weekly.date !== weekId) {
+      playerScores.weekly = { score: score, date: weekId };
+    }
+    
+    if (score > playerScores.monthly.score || playerScores.monthly.date !== monthId) {
+      playerScores.monthly = { score: score, date: monthId };
+    }
+    
+    if (score > playerScores.yearly.score || playerScores.yearly.date !== yearId) {
+      playerScores.yearly = { score: score, date: yearId };
+    }
+    
+    if (score > playerScores.allTime.score) {
+      playerScores.allTime = { score: score };
+    }
+    
+    // Guardar cambios
+    localStorage.setItem('wordGameBestScores', JSON.stringify(bestScores));
+  }
+  
+  // Funciones auxiliares para rangos de tiempo
+  function getWeekId(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - d.getDay());
+    return d.toISOString().split('T')[0];
+  }
+  
+  function getMonthId(date) {
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+  }
+  
+  function getYearId(date) {
+    return `${date.getFullYear()}`;
+  }
+
+  function showScores() {
+    // Eventos para tabs
+    document.querySelectorAll('.score-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.score-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        showScoreList(this.dataset.range);
+      });
+    });
+    
+    // Eventos para filtros
+    showAllScoresBtn.addEventListener('click', function() {
+      currentScoreFilter = 'all';
+      showScoreList(document.querySelector('.score-tab.active').dataset.range);
+    });
+    
+    showMyScoresBtn.addEventListener('click', function() {
+      currentScoreFilter = 'my';
+      showScoreList(document.querySelector('.score-tab.active').dataset.range);
+    });
+    
+    // Mostrar clasificación diaria por defecto
+    showScoreList('daily');
+  }
+  
+  function showScoreList(range) {
+    const bestScores = JSON.parse(localStorage.getItem('wordGameBestScores') || '{}');
+    scoreListDiv.innerHTML = '';
+    
+    // Crear array de puntuaciones
+    const scoresArray = [];
+    
+    for (const pid in bestScores) {
+      const player = bestScores[pid];
+      const isCurrentPlayer = pid === playerId;
+      
+      // Si el filtro es "mis puntuaciones" y no es el jugador actual, saltar
+      if (currentScoreFilter === 'my' && !isCurrentPlayer) continue;
+      
+      let scoreData;
+      
+      switch(range) {
+        case 'daily': 
+          scoreData = player.daily;
+          break;
+        case 'weekly': 
+          scoreData = player.weekly;
+          break;
+        case 'monthly': 
+          scoreData = player.monthly;
+          break;
+        case 'yearly': 
+          scoreData = player.yearly;
+          break;
+        case 'allTime': 
+          scoreData = player.allTime;
+          break;
+      }
+      
+      if (scoreData && scoreData.score > 0) {
+        scoresArray.push({
+          playerId: pid,
+          playerName: player.name,
+          score: scoreData.score,
+          date: scoreData.date,
+          isCurrentPlayer: isCurrentPlayer
+        });
+      }
+    }
+    
+    // Ordenar y tomar top 10
+    scoresArray.sort((a, b) => b.score - a.score);
+    
+    if (scoresArray.length === 0) {
+      scoreListDiv.innerHTML = '<p class="no-scores">No hay puntuaciones para mostrar</p>';
+      return;
+    }
+    
+    // Mostrar resultados
+    scoresArray.forEach((scoreData, index) => {
+      const scoreItem = document.createElement('div');
+      scoreItem.className = 'score-item';
+      
+      // Destacar jugador actual
+      if (scoreData.isCurrentPlayer) {
+        scoreItem.style.backgroundColor = 'rgba(255, 215, 0, 0.15)';
+        scoreItem.style.borderLeft = '3px solid #ffd700';
+      }
+      
+      scoreItem.innerHTML = `
+        <div>
+          <span class="score-position">${index + 1}.</span>
+          <span class="score-value">${scoreData.score} pts</span>
+          <span>${scoreData.isCurrentPlayer ? ' (Tú)' : ''}</span>
+        </div>
+        <div style="text-align: right;">
+          <div>${scoreData.playerName}</div>
+          ${scoreData.date ? `<div class="score-date">${formatDate(scoreData.date, range)}</div>` : ''}
+        </div>
+      `;
+      
+      scoreListDiv.appendChild(scoreItem);
+    });
+  }
+  
+  function formatDate(dateString, range) {
+    if (!dateString) return '';
+    
+    switch(range) {
+      case 'daily':
+        return new Date(dateString).toLocaleDateString();
+      case 'weekly':
+        const weekDate = new Date(dateString);
+        return `Sem ${getWeekNumber(weekDate)}`;
+      case 'monthly':
+        const [year, month] = dateString.split('-');
+        return `${month}/${year}`;
+      case 'yearly':
+        return `Año ${dateString}`;
+      default:
+        return '';
+    }
+  }
+  
+  // Obtener número de semana
+  function getWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  }
+
+  // Resto del código del juego (sin cambios)
+  function resetGame() {
+    clearInterval(timerInterval);
+    score = 0;
+    level = 1;
+    goal = 30;
+    resetRound();
+  }
+
+  function cargarDiccionario() {
+    return fetch(diccionarioURL)
+      .then(r => r.ok ? r.text() : Promise.reject('No se pudo cargar diccionario'))
+      .then(texto => {
+        const palabras = texto.split(/\r?\n/)
+          .map(p => p.trim().toUpperCase())
+          .filter(p => p.length > 0);
+          
+        diccionario = new Set(palabras);
+      })
+      .catch(err => { 
+        messageDiv.textContent = 'Error cargando diccionario.'; 
+        console.error(err); 
+      });
+  }
+
+  function generateLetters() {
+    letters = []; 
+    let vocalCount = 0; 
+    const targetLetters = 16;
+    
+    while(letters.length < targetLetters) {
+      const l = alphabetWeighted[Math.floor(Math.random() * alphabetWeighted.length)];
+      if(vowels.includes(l)) vocalCount++;
+      letters.push(l);
+    }
+    
+    if(vocalCount < 3) {
+      let toReplace = 3 - vocalCount; 
+      for(let i = 0; i < letters.length && toReplace > 0; i++) {
+        if(!vowels.includes(letters[i])) {
+          letters[i] = vowels[Math.floor(Math.random() * vowels.length)]; 
+          toReplace--;
+        }
+      }
+    }
+  }
+
+  function displayLetters() {
+    lettersDiv.innerHTML = ""; 
+    usedIndices = [];
+    
+    letters.forEach((l, i) => {
+      const span = document.createElement("span"); 
+      span.textContent = l; 
+      span.className = "letter"; 
+      span.dataset.index = i;
+      
+      span.onclick = function() {
+        if(usedIndices.includes(i)) return;
+        currentWord += l; 
+        usedIndices.push(i); 
+        span.classList.add("used", "active");
+        
+        setTimeout(() => span.classList.remove("active"), 200);
+        
+        updateCurrentWord(); 
+        validateBtn.disabled = currentWord.length < 3; 
+        clearBtn.disabled = false;
+      };
+      
+      lettersDiv.appendChild(span);
+    });
+  }
+
+  function updateCurrentWord() { 
+    currentWordDiv.textContent = currentWord; 
+  }
+  
+  function clearCurrentWord(preserveMessage = false) {
+    currentWord = ""; 
+    usedIndices = []; 
+    updateCurrentWord(); 
+    validateBtn.disabled = true; 
+    clearBtn.disabled = true;
+    
+    lettersDiv.querySelectorAll(".letter").forEach(s => s.classList.remove("used"));
+    
+    if(!preserveMessage) {
+      messageDiv.textContent = "";
+    }
+  }
+
+  function calculatePoints(word) {
+    if(word.length === 3) return 5;
+    if(word.length === 4) return 10;
+    if(word.length === 5) return 15;
+    if(word.length === 6) return 20;
+    if(word.length >= 7) return 50;
+    return 0;
+  }
+
+  function showPointsAnimation(points, element) {
+    const pointsEl = document.createElement('div');
+    pointsEl.className = 'points-flash';
+    pointsEl.textContent = `+${points}`;
+    
+    const rect = element.getBoundingClientRect();
+    pointsEl.style.left = `${rect.left + rect.width / 2}px`;
+    pointsEl.style.top = `${rect.top}px`;
+    
+    document.body.appendChild(pointsEl);
+    
+    setTimeout(() => {
+      document.body.removeChild(pointsEl);
+    }, 1000);
+  }
+
+  function flashMessage(text, color) {
+    messageDiv.textContent = text; 
+    messageDiv.style.color = color; 
+    messageDiv.style.transform = "scale(1.08)";
+    
+    setTimeout(() => { 
+      messageDiv.style.transform = "scale(1)"; 
+      messageDiv.style.color = "#ffd700"; 
+    }, 900);
+  }
+
+  function updateScoreboard() { 
+    scoreboardDiv.textContent = `Nivel: ${level} | Puntos: ${score} | Meta: ${goal}`; 
+  }
+
+  function nextGoal(lvl) { 
+    return lvl === 1 ? 30 : 
+           lvl === 2 ? 70 : 
+           lvl === 3 ? 120 : 
+           lvl === 4 ? 180 : 
+           lvl === 5 ? 250 : 
+           250 + ((lvl - 5) * (70 + 10 * (lvl - 6 >= 0 ? lvl - 6 : 0))); 
+  }
+
+  function resetRound() {
+    clearCurrentWord(); 
+    generateLetters(); 
+    displayLetters(); 
+    resetTimer(); 
+    palabrasFormadas.clear();
+    countdownPlayed = false;
+    
+    flashMessage(`Nivel ${level} — ¡A formar palabras!`, "#00ffcc"); 
+    updateScoreboard();
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval); 
+    timeLeft = 60; 
+    timerDiv.textContent = timeLeft;
+    countdownPlayed = false;
+    
+    timerInterval = setInterval(() => {
+      timeLeft--; 
+      timerDiv.textContent = timeLeft;
+      
+      if (timeLeft === 5 && !countdownPlayed) {
+        soundCountDown.play();
+        countdownPlayed = true;
+      }
+      
+      if (timeLeft <= 0) { 
+        clearInterval(timerInterval); 
+        finishRound(); 
+      }
+    }, 1000);
+  }
+
+  function showLevelUpAnimation() {
+    const levelUpEl = document.createElement('div');
+    levelUpEl.className = 'level-up';
+    levelUpEl.textContent = `¡NIVEL ${level}!`;
+    
+    document.body.appendChild(levelUpEl);
+    
+    setTimeout(() => {
+      document.body.removeChild(levelUpEl);
+    }, 1500);
+  }
+
+  function finishRound() {
+    if(score >= goal) { 
+      const prev = level; 
+      level++; 
+      goal = nextGoal(level); 
+      
+      showLevelUpAnimation();
+      soundLevelUp.play();
+      
+      setTimeout(() => {
+        flashMessage(`🎉 ¡Nivel ${prev} superado! Nueva meta: ${goal} pts`, "#00ff00"); 
+        updateScoreboard(); 
+        resetRound();
+      }, 1500);
+    } else {
+      endGame();
+    }
+  }
+
+  function endGame() {
+    messageDiv.style.color = "#ff4444"; 
+    messageDiv.textContent = `Tiempo acabado. Puntuación final: ${score}`; 
+    soundGameOver.play();
+    
+    validateBtn.disabled = true; 
+    clearBtn.disabled = true; 
+    
+    lettersDiv.querySelectorAll(".letter").forEach(s => s.onclick = null);
+    
+    // Guardar puntuación al finalizar
+    saveScore();
+  }
+
+  function validateWord() {
+    if(currentWord.length < 3) { 
+      flashMessage("Palabra muy corta", "#ff4444"); 
+      soundWrong.play(); 
+      consecutive5 = 0; 
+      consecutive10 = 0; 
+      return; 
+    }
+    
+    const p = currentWord.toUpperCase();
+    
+    if(!diccionario.has(p)) { 
+      flashMessage("Palabra no válida", "#ff4444"); 
+      soundWrong.play(); 
+      consecutive5 = 0; 
+      consecutive10 = 0; 
+      clearCurrentWord(true); 
+      return; 
+    }
+    
+    if(palabrasFormadas.has(p)) { 
+      flashMessage("Ya usaste esa palabra", "#ff4444"); 
+      soundWrong.play(); 
+      consecutive5 = 0; 
+      consecutive10 = 0; 
+      clearCurrentWord(true); 
+      return; 
+    }
+
+    const points = calculatePoints(currentWord); 
+    score += points; 
+    palabrasFormadas.add(p); 
+    consecutive5++; 
+    consecutive10++; 
+    
+    const lastLetterIndex = usedIndices[usedIndices.length - 1];
+    const lastLetter = lettersDiv.querySelector(`.letter[data-index="${lastLetterIndex}"]`);
+    if(lastLetter) {
+      showPointsAnimation(points, lastLetter);
+    }
+    
+    const wordForMessage = currentWord;
+    clearCurrentWord();
+
+    if(consecutive10 === 10) { 
+      score += 50; 
+      flashMessage(`"${p}" → +${points} pts + 50 pts BONUS por 10 palabras consecutivas!`, "#00ffcc"); 
+      soundBonus.play(); 
+      consecutive5 = 0; 
+      consecutive10 = 0;
+    } else if(consecutive5 === 5) { 
+      score += 20; 
+      flashMessage(`"${p}" → +${points} pts + 20 pts BONUS por 5 palabras consecutivas!`, "#00ffcc"); 
+      soundBonus.play(); 
+      consecutive5 = 0;
+    } else { 
+      flashMessage(`"${p}" — ${wordForMessage.length} letras → +${points} pts`, "#00ff00"); 
+      soundCorrect.play();
+    }
+    
+    updateScoreboard();
+  }
+
+  // Asignación de eventos de juego
+  validateBtn.addEventListener('click', validateWord);
+  clearBtn.addEventListener('click', clearCurrentWord);
+
+  // Inicialización del juego
+  cargarDiccionario().then(() => {
+    generateLetters();
+    displayLetters();
+    updateScoreboard();
+    messageDiv.textContent = "";
+  });
+});
+</script>
+
+</body>
+</html>
