@@ -20,6 +20,13 @@ jobs:
         cordova platform add android
         cordova build android --release
 
+   - name: List generated files
+      run: |
+        echo "=== ESTRUCTURA DE CARPETAS ==="
+        find platforms/android -name "*.apk" -type f
+        echo "=== CONTENIDO DE platforms/ ==="
+        find platforms/ -type f
+
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
