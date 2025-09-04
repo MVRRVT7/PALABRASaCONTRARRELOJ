@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -11,7 +12,7 @@
     overflow: hidden;
   }
   h1 {
-    margin: 5px 0 20px 0;
+    margin: 5px 0 10px 0; /* Más reducido el margen inferior */
     font-family: Impact, "Arial Black", system-ui, sans-serif; 
     font-size: 2.35rem;
     color: #ffdd00;
@@ -34,10 +35,11 @@
     align-items: center; 
   }
   button {
-    background: #ffd700; border: none; padding: 12px 24px; margin: 15px; font-weight: 700; border-radius: 6px;
-    cursor: pointer; color: #121212; font-size: 1.2rem; user-select: none; box-shadow: 0 0 5px #ffd700;
+    background: #ffd700; border: none; padding: 12px 20px; margin: 12px; font-weight: 700; border-radius: 6px;
+    cursor: pointer; color: #121212; font-size: 1.1rem; user-select: none; box-shadow: 0 0 5px #ffd700;
     transition: all 0.3s ease;
-    width: 220px;
+    width: 200px; /* Aumentado el ancho de los botones */
+    height: 50px; /* Aumentada la altura de los botones */
   }
   button:hover:not(:disabled) { background: #ffec6a; transform: scale(1.05); }
   button:disabled { background: #999; cursor: default; }
@@ -47,7 +49,8 @@
     grid-template-columns: repeat(8, 38px);
     gap: 6px;
     justify-content: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px; /* Reducido margen inferior */
+    margin-top: 10px; /* Aumentado margen superior para bajar más las letras */
   }
   .letter {
     width: 38px; height: 38px; background: #eee; color: #121212; font-weight: 800; font-size: 1.4rem;
@@ -57,26 +60,26 @@
   .letter.used { background: #444; color: #888; cursor: default; box-shadow: none; transform: scale(0.95); }
   .letter.active { transform: scale(1.3); background: #ffec6a; }
   #currentWord { 
-    font-size: 1.8rem; min-height: 2.5rem; letter-spacing: 3px; margin-bottom: 10px; 
+    font-size: 1.8rem; min-height: 2.5rem; letter-spacing: 3px; margin-bottom: 8px; /* Reducido margen inferior */
     user-select: text; text-align: center; padding: 5px 10px; border-radius: 8px;
     background: rgba(255, 255, 255, 0.1); 
     width: 95%;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  #buttons { margin-bottom: 10px; display: flex; gap: 10px; }
+  #buttons { margin-bottom: 8px; display: flex; gap: 8px; } /* Reducido margen inferior y gap */
   #timer { 
-    font-size: 1.8rem; margin-bottom: 10px; color: #00ffff; font-weight: 700; 
+    font-size: 1.8rem; margin-bottom: 8px; color: #00ffff; font-weight: 700; /* Reducido margen inferior */
     text-shadow: 0 0 5px #00ffff; 
   }
   #scoreboard { 
-    font-size: 1.2rem; margin-bottom: 10px; letter-spacing: 1px; 
+    font-size: 1.2rem; margin-bottom: 8px; letter-spacing: 1px; /* Reducido margen inferior */
     padding: 8px 12px; border-radius: 6px; background: rgba(0, 0, 0, 0.3);
     width: 95%;
     text-align: center;
   }
   #message {
-    height: 2em; margin-bottom: 15px; color: #ffd700; font-size: 1.3rem; font-weight: 700;
+    height: 2em; margin-bottom: 10px; color: #ffd700; font-size: 1.3rem; font-weight: 700; /* Reducido margen inferior */
     text-align: center; transition: all 0.25s ease; width: 95%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -194,11 +197,14 @@
     font-size: 0.9rem;
     margin: 0;
     width: auto;
+    height: auto;
   }
   
   /* Botón VOLVER - MODIFICADO */
   #backBtn {
     margin-top: 15px; /* Mantiene el botón abajo */
+    width: 150px; /* Ancho reducido */
+    height: 40px; /* Altura reducida */
   }
   
   .no-scores {
@@ -283,8 +289,11 @@
     }
     
     button {
-      width: 200px;
-      margin: 12px;
+      width: 180px; /* Ancho reducido para móviles */
+      height: 46px; /* Altura reducida */
+      margin: 10px;
+      font-size: 1rem;
+      padding: 10px 16px;
     }
     
     #scores h2, #howTo h2 {
@@ -315,7 +324,7 @@
   <div id="timer">60</div>
   <div id="scoreboard">Nivel: 1 | Puntos: 0 | Meta: 30</div>
   <div id="message">Cargando diccionario...</div>
-  <button id="backFromGameBtn" class="grayBtn">SALIR</button>
+  <button id="backFromGameBtn" class="grayBtn" style="width: 150px; height: 40px;">SALIR</button>
 </div>
 
 <!-- PANTALLA DE CLASIFICACIONES MEJORADA -->
@@ -337,7 +346,7 @@
   
   <div id="scoreList"></div>
   
-  <button id="backBtn" class="grayBtn">VOLVER</button>
+  <button id="backBtn" class="grayBtn" style="width: 150px; height: 40px;">VOLVER</button>
 </div>
 
 <!-- PANTALLA CÓMO JUGAR - MEJORADA -->
@@ -359,7 +368,7 @@
     </li>
     <li class="instruction-item">
       <div class="instruction-icon">🔥</div>
-      <div class="instruction-text">Puntos extra por cada 5 y 10 palabras correctas consecutivas.</div>
+      <div class="instruction-text">Puntos extra por cada 5 и 10 palabras correctas consecutivas.</div>
     </li>
     <li class="instruction-item">
       <div class="instruction-icon">⏱️</div>
@@ -371,7 +380,7 @@
     <strong>⚠️ IMPORTANTE:</strong> No serán válidas conjugaciones verbales ni plurales (solo palabras en singular).
   </div>
   
-  <button id="backFromHowToBtn" class="grayBtn">VOLVER</button>
+  <button id="backFromHowToBtn" class="grayBtn" style="width: 150px; height: 40px;">VOLVER</button>
 </div>
 
 <script>
@@ -567,7 +576,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const player = bestScores[pid];
       const isCurrentPlayer = pid === playerId;
       
-      // Si el filtro es "mis puntuaciones" y no es el jugador actual, saltar
+      // Si el filtro es "mis puntuaciones" и no es el jugador actual, saltar
       if (currentScoreFilter === 'my' && !isCurrentPlayer) continue;
       
       let scoreData;
@@ -907,58 +916,50 @@ document.addEventListener("DOMContentLoaded", function() {
     if(palabrasFormadas.has(p)) { 
       flashMessage("Ya usaste esa palabra", "#ff4444"); 
       soundWrong.play(); 
-      consecutive5 = 0; 
-      consecutive10 = 0; 
       clearCurrentWord(true); 
       return; 
     }
-
-    const points = calculatePoints(currentWord); 
-    score += points; 
+    
     palabrasFormadas.add(p); 
+    const points = calculatePoints(p); 
+    score += points; 
+    
+    showPointsAnimation(points, validateBtn);
+    soundCorrect.play();
+    
     consecutive5++; 
-    consecutive10++; 
+    consecutive10++;
     
-    const lastLetterIndex = usedIndices[usedIndices.length - 1];
-    const lastLetter = lettersDiv.querySelector(`.letter[data-index="${lastLetterIndex}"]`);
-    if(lastLetter) {
-      showPointsAnimation(points, lastLetter);
-    }
-    
-    const wordForMessage = currentWord;
-    clearCurrentWord();
-
-    if(consecutive10 === 10) { 
-      score += 50; 
-      flashMessage(`"${p}" → +${points} pts + 50 pts BONUS por 10 palabras consecutivas!`, "#00ffcc"); 
-      soundBonus.play(); 
+    if(consecutive5 === 5) { 
+      score += 10; 
       consecutive5 = 0; 
-      consecutive10 = 0;
-    } else if(consecutive5 === 5) { 
-      score += 20; 
-      flashMessage(`"${p}" → +${points} pts + 20 pts BONUS por 5 palabras consecutivas!`, "#00ffcc"); 
+      flashMessage("¡Bonus 5 palabras!", "#00ff00"); 
       soundBonus.play(); 
-      consecutive5 = 0;
-    } else { 
-      flashMessage(`"${p}" — ${wordForMessage.length} letras → +${points} pts`, "#00ff00"); 
-      soundCorrect.play();
     }
     
-    updateScoreboard();
+    if(consecutive10 === 10) { 
+      score += 25; 
+      consecutive10 = 0; 
+      flashMessage("¡Bonus 10 palabras!", "#00ff00"); 
+      soundBonus.play(); 
+    }
+    
+    updateScoreboard(); 
+    clearCurrentWord(true); 
+    
+    if(score >= goal) { 
+      clearInterval(timerInterval); 
+      setTimeout(finishRound, 1000); 
+    }
   }
 
-  // Asignación de eventos de juego
-  validateBtn.addEventListener('click', validateWord);
-  clearBtn.addEventListener('click', clearCurrentWord);
-
-  // Inicialización del juego
-  cargarDiccionario().then(() => {
-    generateLetters();
-    displayLetters();
-    updateScoreboard();
-  });
+  // Inicializar juego
+  validateBtn.addEventListener("click", validateWord);
+  clearBtn.addEventListener("click", () => clearCurrentWord());
+  
+  // Cargar diccionario al inicio
+  cargarDiccionario();
 });
 </script>
-
 </body>
 </html>
