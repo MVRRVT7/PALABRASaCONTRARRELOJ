@@ -20,7 +20,7 @@ jobs:
         cordova platform add android
         cordova build android --release
 
-   - name: List generated files
+    - name: List generated files
       run: |
         echo "=== ESTRUCTURA DE CARPETAS ==="
         find platforms/android -name "*.apk" -type f
@@ -31,4 +31,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: palabras-app-apk
-        path: platforms/android/app/build/outputs/apk/**debug**/app-debug.apk
+        path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
